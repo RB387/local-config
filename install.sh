@@ -55,6 +55,18 @@ else
     info "Homebrew is required to install Cursor, but is not available. Skipping."
   fi
 fi
+if [ -d "/Applications/Cursor.app" ] || command -v cursor > /dev/null 2>&1; then
+  CURSOR_USER_DIR="$HOME/Library/Application Support/Cursor/User"
+  if [ -f "$SCRIPT_DIR/cursor/settings.json" ]; then
+    if ask_install "Copy Cursor settings from repo to $CURSOR_USER_DIR/settings.json"; then
+      mkdir -p "$CURSOR_USER_DIR"
+      cp "$SCRIPT_DIR/cursor/settings.json" "$CURSOR_USER_DIR/settings.json"
+      ok "Cursor settings copied"
+    else
+      info "Skipped copying Cursor settings"
+    fi
+  fi
+fi
 
 # ─── 3. Claude CLI ────────────────────────────────────────────────────────────
 claude_bin="$HOME/.local/bin/claude"
