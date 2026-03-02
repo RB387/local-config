@@ -56,8 +56,39 @@ else
   fi
 fi
 
-# ─── 3. iTerm2 ────────────────────────────────────────────────────────────────
-if brew list --cask iterm2 > \dev\null 2>&1; then
+# ─── 3. Claude CLI ────────────────────────────────────────────────────────────
+claude_bin="$HOME/.local/bin/claude"
+if command -v claude > /dev/null 2>&1 || [ -x "$claude_bin" ]; then
+  ok "Claude CLI already installed"
+else
+  info "Claude CLI not found."
+  if ask_install "Install Claude CLI"; then
+    info "Installing Claude CLI..."
+    curl -fsSL https://claude.ai/install.sh | bash
+    ok "Claude CLI installed (binary at $claude_bin)"
+    info "Ensure \$HOME/.local/bin is in your PATH (see step 9: copy .zshrc)"
+  else
+    info "Skipped Claude CLI installation"
+  fi
+fi
+
+# ─── 4. Claude Desktop ────────────────────────────────────────────────────────
+if brew list --cask claude > /dev/null 2>&1 || [ -d "/Applications/Claude.app" ]; then
+  ok "Claude Desktop already installed"
+else
+  info "Claude Desktop not found."
+  if command -v brew > /dev/null 2>&1 && ask_install "Install Claude Desktop via Homebrew cask"; then
+    info "Installing Claude Desktop..."
+    brew install --cask claude
+    ok "Claude Desktop installed"
+  else
+    info "Skipped Claude Desktop installation"
+  fi
+fi
+
+# ─── 5. iTerm2 ────────────────────────────────────────────────────────────────
+iterm_just_installed=0
+if brew list --cask iterm2 > /dev/null 2>&1; then
   ok "iTerm2 already installed"
 else
   info "iTerm2 not found."
@@ -65,12 +96,19 @@ else
     info "Installing iTerm2..."
     brew install --cask iterm2
     ok "iTerm2 installed"
+    iterm_just_installed=1
   else
     info "Skipped iTerm2 installation"
   fi
 fi
+if [ "$iterm_just_installed" = 1 ]; then
+  info "Import iTerm2 profiles: Profiles → Open Profiles → Edit Profiles → Other Actions → Import JSON Profiles"
+  info "Select: $SCRIPT_DIR/iterm/Default.json"
+  printf "Press Enter when done..."
+  read -r _
+fi
 
-# ─── 4. Oh My Zsh + Zsh ───────────────────────────────────────────────────────
+# ─── 6. Oh My Zsh + Zsh ───────────────────────────────────────────────────────
 if command -v zsh > /dev/null 2>&1 && [ -d "$HOME/.oh-my-zsh" ]; then
   ok "zsh + Oh My Zsh already installed ($(zsh --version))"
 else
@@ -84,7 +122,7 @@ else
   fi
 fi
 
-# ─── 5. zsh-autosuggestions ───────────────────────────────────────────────────
+# ─── 7. zsh-autosuggestions ───────────────────────────────────────────────────
 if [ -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]; then
   ok "zsh-autosuggestions already installed"
 else
@@ -99,7 +137,7 @@ else
   fi
 fi
 
-# ─── 6. zsh-syntax-highlighting ───────────────────────────────────────────────
+# ─── 8. zsh-syntax-highlighting ───────────────────────────────────────────────
 if [ -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]; then
   ok "zsh-syntax-highlighting already installed"
 else
@@ -114,7 +152,7 @@ else
   fi
 fi
 
-# ─── 7. Copy .zshrc ───────────────────────────────────────────────────────────
+# ─── 9. Copy .zshrc ───────────────────────────────────────────────────────────
 info ".zshrc will overwrite any existing file."
 if ask_install "Copy $SCRIPT_DIR/zshrc to \$HOME/.zshrc"; then
   info "Copying .zshrc to $HOME/.zshrc..."
