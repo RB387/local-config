@@ -162,5 +162,34 @@ else
   info "Skipped copying .zshrc"
 fi
 
+# ─── 10. Git configuration ───────────────────────────────────────────────────
+if command -v git > /dev/null 2>&1; then
+  git_name=$(git config --global user.name 2>/dev/null)
+  git_email=$(git config --global user.email 2>/dev/null)
+  if [ -n "$git_name" ] && [ -n "$git_email" ]; then
+    ok "Git already configured (user.name=$git_name, user.email=$git_email)"
+  else
+    info "Git user.name and/or user.email not set."
+    if ask_install "Configure git user.name and user.email"; then
+      printf "  git user.name: "
+      IFS= read -r git_name
+      printf "  git user.email: "
+      IFS= read -r git_email
+      if [ -n "$git_name" ]; then
+        git config --global user.name "$git_name"
+        ok "git config --global user.name set"
+      fi
+      if [ -n "$git_email" ]; then
+        git config --global user.email "$git_email"
+        ok "git config --global user.email set"
+      fi
+    else
+      info "Skipped git configuration"
+    fi
+  fi
+else
+  info "Git not found. Install git first to configure it."
+fi
+
 printf "\n${GREEN}All done!${NC} Restart your shell or run: source ~/.zshrc\n"
 
