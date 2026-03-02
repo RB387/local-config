@@ -66,6 +66,23 @@ if [ -d "/Applications/Cursor.app" ] || command -v cursor > /dev/null 2>&1; then
       info "Skipped copying Cursor settings"
     fi
   fi
+  CURSOR_CMD="cursor"
+  if ! command -v cursor > /dev/null 2>&1 && [ -x "/Applications/Cursor.app/Contents/Resources/app/bin/cursor" ]; then
+    CURSOR_CMD="/Applications/Cursor.app/Contents/Resources/app/bin/cursor"
+  fi
+  if command -v cursor > /dev/null 2>&1 || [ -x "/Applications/Cursor.app/Contents/Resources/app/bin/cursor" ]; then
+    if $CURSOR_CMD --list-extensions 2>/dev/null | grep -qx 'anthropic.claude-code'; then
+      ok "Claude extension already installed"
+    else
+      if ask_install "Install Claude extension (anthropic.claude-code) for Cursor"; then
+        info "Installing Claude extension..."
+        $CURSOR_CMD --install-extension anthropic.claude-code
+        ok "Claude extension installed"
+      else
+        info "Skipped Claude extension installation"
+      fi
+    fi
+  fi
 fi
 
 # ─── 3. Claude CLI ────────────────────────────────────────────────────────────
